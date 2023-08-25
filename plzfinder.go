@@ -1,4 +1,4 @@
-package main
+package plzfinder
 
 import (
 	"encoding/csv"
@@ -8,7 +8,6 @@ import (
 	"math"
 	"os"
 	"strconv"
-	"time"
 )
 
 type PlzLoc struct {
@@ -21,15 +20,14 @@ type PlzLoc struct {
 
 // Global Variables
 var locations []PlzLoc // The Locations are stored in the RAM during runtime
-
 const earthRadius = 6371.0
 
 // In the init function the data is read from CSV. This will only run once so no need to speed up.
 // Data can easily be udpated by changing the CSV content.
-func init() {
+func LoadCSV(filename string) {
 
 	// Open the CSV file
-	file, err := os.Open("zipcodes.de.csv")
+	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -118,14 +116,11 @@ func isClose(lat1, lon1, lat2, lon2, distance float64) bool {
 }
 
 func FindeOrte(plz int, radius int) ([]PlzLoc, error) {
-
 	startpunkt, err := findeStartPunkt(plz)
 	if err != nil {
 		log.Fatal("Startpunkt Err:", err)
 	}
-
 	var orte []PlzLoc
-
 	for _, location := range locations {
 		if isClose(location.Lat, location.Lon, startpunkt.Lat, startpunkt.Lon, float64(radius)) { // quick check
 			if haversine(location.LatR, location.LonR, startpunkt.LatR, startpunkt.LonR) <= float64(radius) { // exact check
@@ -133,43 +128,5 @@ func FindeOrte(plz int, radius int) ([]PlzLoc, error) {
 			}
 		}
 	}
-
 	return orte, nil
-
-}
-
-func main() {
-	if len(os.Args) < 3 {
-		fmt.Println("Please provide a postal code as an argument.")
-		return
-	}
-
-	// Convert the argument to an integer
-	plz, err := strconv.Atoi(os.Args[1]) // PLZ Mittelpunkt
-	if err != nil {
-		fmt.Printf("Error: Invalid postal code provided: %s\n", os.Args[1])
-		return
-	}
-
-	radius, err := strconv.Atoi(os.Args[2]) // Radius in km
-	if err != nil {
-		fmt.Printf("Error: Invalid postal code provided: %s\n", os.Args[2])
-		return
-	}
-
-	//fmt.Println(os.Args[0])
-	fmt.Println(plz)
-
-	timestart := time.Now()
-
-	orte, err := FindeOrte(plz, radius)
-	if err != nil {
-		fmt.Println("Error findeOrte", err)
-		return
-	}
-
-	fmt.Println("Search ended in :", (time.Since(timestart)))
-
-	fmt.Println("Gefundene PLZ: ", len(orte))
-
 }
