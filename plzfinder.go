@@ -16,7 +16,7 @@ type PlzLoc struct {
 	Lon  float64
 	LatR float64 // This will be calculated 1time to speed the code up
 	LonR float64
-	Dist float64 // This will be the distdance
+	Dist float64 // This will be the distdance.
 }
 
 // Global Variables
