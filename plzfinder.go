@@ -11,7 +11,7 @@ import (
 )
 
 type PlzLoc struct {
-	Plz  int
+	Plz  string
 	Lat  float64
 	Lon  float64
 	LatR float64 // This will be calculated 1time to speed the code up
@@ -52,16 +52,16 @@ func LoadCSV(filename string) {
 		}
 
 		// Convert the fields to integers
-		plz, err1 := strconv.Atoi(record[1])
-		lat, err2 := strconv.ParseFloat(record[9], 64)
-		lon, err3 := strconv.ParseFloat(record[10], 64)
+		plz := record[1]
+		lat, err1 := strconv.ParseFloat(record[9], 64)
+		lon, err2 := strconv.ParseFloat(record[10], 64)
 
 		// Do the radiant converstion once here, so we do not need it do to it later over again.
 		latR := lat * math.Pi / 180.0
 		lonR := lon * math.Pi / 180.0
 
 		// If any conversions fail, we'll skip this record
-		if err1 != nil || err2 != nil || err3 != nil {
+		if err1 != nil || err2 != nil {
 			fmt.Printf("Error converting record: %+v\n", record)
 			continue
 		}
@@ -90,9 +90,9 @@ func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 }
 
 // Finds the start location by the PLZ the user entered.
-func findeStartPunkt(plz int) (PlzLoc, error) {
+func findeStartPunkt(plz string) (PlzLoc, error) {
 
-	if plz == 99999 {
+	if plz == "99999" {
 		return PlzLoc{Plz: plz, Lat: 0, Lon: 0}, errors.New("no Fallback found")
 	}
 	for _, location := range locations {
@@ -101,7 +101,16 @@ func findeStartPunkt(plz int) (PlzLoc, error) {
 		}
 	}
 	// Uses the next PLZ from the database if there is a number missing. Hopefully it is close ;-)
-	return findeStartPunkt(plz + 1)
+	intPlz, err := strconv.Atoi(plz)
+	if err != nil {
+		fmt.Println("Error converting string to int:", err)
+		return PlzLoc{Plz: plz, Lat: 0, Lon: 0}, errors.New("error parsing PLZ")
+	}
+
+	intPlz++
+	plz = strconv.Itoa(intPlz)
+
+	return findeStartPunkt(plz)
 }
 
 // Quick Check Function.
@@ -115,7 +124,7 @@ func isClose(lat1, lon1, lat2, lon2, distance float64) bool {
 	return totalDiff < distance+10 // 10km Security added
 }
 
-func FindeOrte(plz int, radius int) ([]PlzLoc, error) {
+func FindeOrte(plz string, radius int) ([]PlzLoc, error) {
 	startpunkt, err := findeStartPunkt(plz)
 	if err != nil {
 		log.Fatal("Startpunkt Err:", err)
