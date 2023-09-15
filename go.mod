@@ -1,3 +1,3 @@
-module github.com/karl1b/plzfinder
+module github.com/Karl1b/plzfinder
 
 go 1.21.0
