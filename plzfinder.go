@@ -19,6 +19,19 @@ type PlzLoc struct {
 	Dist float64 // This will be the distdance.
 }
 
+type ByDist []PlzLoc
+
+// Implement sort.Interface for ByDist
+func (a ByDist) Len() int {
+	return len(a)
+}
+func (a ByDist) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+func (a ByDist) Less(i, j int) bool {
+	return a[i].Dist < a[j].Dist
+}
+
 // Global Variables
 var locations []PlzLoc // The Locations are stored in the RAM during runtime
 const earthRadius = 6371.0
