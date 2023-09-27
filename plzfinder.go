@@ -33,7 +33,7 @@ func (a ByDist) Less(i, j int) bool {
 }
 
 // Global Variables
-var locations []PlzLoc // The Locations are stored in the RAM during runtime
+var Locations []PlzLoc // The Locations are stored in the RAM during runtime
 const earthRadius = 6371.0
 
 // In the init function the data is read from CSV. This will only run once so no need to speed up.
@@ -80,7 +80,7 @@ func LoadCSV(filename string) {
 			continue
 		}
 
-		locations = append(locations, PlzLoc{Plz: plz, Lat: lat, Lon: lon, LatR: latR, LonR: lonR})
+		Locations = append(Locations, PlzLoc{Plz: plz, Lat: lat, Lon: lon, LatR: latR, LonR: lonR})
 	}
 
 }
@@ -109,7 +109,7 @@ func findeStartPunkt(plz string) (PlzLoc, error) {
 	if plz == "99999" {
 		return PlzLoc{Plz: plz, Lat: 0, Lon: 0}, errors.New("no Fallback found")
 	}
-	for _, location := range locations {
+	for _, location := range Locations {
 		if location.Plz == plz {
 			return location, nil
 		}
@@ -144,7 +144,7 @@ func FindeOrte(plz string, radius int) ([]PlzLoc, error) {
 		log.Fatal("Startpunkt Err:", err)
 	}
 	var orte []PlzLoc
-	for _, location := range locations {
+	for _, location := range Locations {
 		if isClose(location.Lat, location.Lon, startpunkt.Lat, startpunkt.Lon, float64(radius)) { // quick check
 
 			dist := haversine(location.LatR, location.LonR, startpunkt.LatR, startpunkt.LonR)
