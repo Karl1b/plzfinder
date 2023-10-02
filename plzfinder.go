@@ -36,6 +36,68 @@ func (a ByDist) Less(i, j int) bool {
 var Locations []PlzLoc // The Locations are stored in the RAM during runtime
 const earthRadius = 6371.0
 
+func ReturnNearestAvailablePLZ(requestPLZ string, maxIterations int) (string, error) { // Return the closest PLZ
+
+	convertPLZintToString := func(plz int) string {
+		if plz < 0 {
+			return fmt.Sprintf("%06d", plz)
+		}
+		return fmt.Sprintf("%05d", plz)
+	}
+
+	convertPLZstrToInt := func(plz string) (int, error) {
+		result, err := strconv.Atoi(plz)
+		return result, err
+	}
+
+	result := requestPLZ
+	number := 1
+	iteration := 0
+	match := false
+
+	check := func(tryPlz string) bool {
+		match := false
+		if len(tryPlz) > 5 {
+			return match
+		}
+
+		for _, loc := range Locations {
+			if loc.Plz == tryPlz {
+				match = true
+				break
+			}
+		}
+		return match
+	}
+
+	for {
+
+		if iteration > maxIterations {
+			return "99999", errors.New("no matching Plz found")
+		}
+
+		match = check(result)
+		if match {
+			return result, nil
+		}
+		plzAsInt, err := convertPLZstrToInt(result)
+		if err != nil {
+			return "99999", errors.New("no matching Plz found conversion error")
+		}
+
+		if iteration%2 == 0 {
+			plzAsInt = plzAsInt - number
+		} else {
+			plzAsInt = plzAsInt + number
+		}
+		result = convertPLZintToString(plzAsInt)
+
+		number++
+		iteration++
+	}
+
+}
+
 // In the init function the data is read from CSV. This will only run once so no need to speed up.
 // Data can easily be udpated by changing the CSV content.
 func LoadCSV(filename string) {
